@@ -7,13 +7,14 @@ import styles from './unlockButton.module.css';
 interface UnlockButtonProps extends PropsWithChildren {
   type: 'rectangle' | 'circle';
   timeout: number;
+  state: 'locked' | 'unlocking' | 'unlocked';
+  onClick: () => void;
 }
 
 export default function UnlockButton(props: UnlockButtonProps) {
   const [timeoutId, setTimeoutId] = useState<ReturnType<typeof setTimeout>>();
-  const [state, setState] = useState<
-    'locked' | 'charging' | 'unlocking' | 'finished'
-  >('locked');
+  const [charging, setCharging] = useState(false);
+  const { state } = props;
 
   useEffect(() => {
     document.documentElement.addEventListener('mouseup', onMouseUp);
@@ -32,36 +33,23 @@ export default function UnlockButton(props: UnlockButtonProps) {
 
     clearTimeout(timeoutId);
     setTimeoutId(setTimeout(() => unlock(), props.timeout + 50));
-    setState('charging');
+    setCharging(true);
     vibrate(10);
   }
 
   function onMouseUp() {
-    if (state != 'charging') {
+    if (!charging || state != 'locked') {
       return;
     }
 
     clearTimeout(timeoutId);
-    setState('locked');
+    setCharging(false);
     vibrate(10);
   }
 
   function unlock() {
-    setState('unlocking');
-    vibrate(10);
-
-    setTimeout(() => {
-      finish();
-    }, 3000);
-  }
-
-  function finish() {
-    setState('finished');
-    vibrate(500);
-
-    setTimeout(() => {
-      setState('locked');
-    }, 2000);
+    setCharging(false);
+    props.onClick();
   }
 
   if (props.type == 'circle') {
@@ -72,20 +60,25 @@ export default function UnlockButton(props: UnlockButtonProps) {
         onTouchStart={onMouseDown}
       >
         <div
+          className={classNames(styles.backSignal, {
+            hidden: state != 'unlocking',
+          })}
+        />
+        <div
           className={classNames(
             styles.root,
             ' w-[200px] h-[200px] border-4 box-content border-conversion select-none text-white overflow-hidden text-xl font-bold flex items-center rounded-full relative',
             {
-              'bg-main': state != 'finished',
-              'bg-green-500 border-green-500': state == 'finished',
-              'border-white': state == 'charging' || state == 'unlocking',
+              'bg-main': state != 'unlocked',
+              'bg-green-500 border-green-500': state == 'unlocked',
+              'border-white': charging || state == 'unlocking',
             },
           )}
         >
           <div
             className={classNames(styles.after, {
-              [styles.spin ?? '']: state == 'charging' || state == 'unlocking',
-              hidden: state == 'finished',
+              [styles.spin ?? '']: charging || state == 'unlocking',
+              hidden: state == 'unlocked',
             })}
             style={{
               animationDuration: props.timeout / 2 + 'ms',
@@ -93,8 +86,8 @@ export default function UnlockButton(props: UnlockButtonProps) {
           />
           <div
             className={classNames(styles.before, {
-              [styles.spin2 ?? '']: state == 'charging' || state == 'unlocking',
-              hidden: state == 'finished',
+              [styles.spin2 ?? '']: charging || state == 'unlocking',
+              hidden: state == 'unlocked',
             })}
             style={{
               animationDuration: props.timeout / 2 + 'ms',
@@ -106,23 +99,14 @@ export default function UnlockButton(props: UnlockButtonProps) {
             className={classNames(
               'z-10 absolute top-[10px] left-[10px] text-center w-[180px] rounded-full h-[180px] bg-conversion flex flex-col justify-center items-center',
               {
-                'bg-green-600': state == 'finished',
+                'bg-green-600': state == 'unlocked',
               },
             )}
           >
             <div
-              className={classNames(styles.signal, {
-                hidden: state != 'unlocking',
-              })}
-            >
-              <div />
-              <div />
-              <div />
-            </div>
-            <div
               className={classNames(styles.lock, 'mb-2 scale-[70%]', {
-                [styles.unlocked ?? '']: state == 'finished',
-                [styles.charging ?? '']: state == 'charging',
+                [styles.unlocked ?? '']: state == 'unlocked',
+                [styles.charging ?? '']: charging,
                 [styles.unlocking ?? '']: state == 'unlocking',
               })}
             />
@@ -138,7 +122,7 @@ export default function UnlockButton(props: UnlockButtonProps) {
       className={classNames(
         'bg-conversion border-conversion select-none p-6 text-white overflow-hidden text-xl font-bold px-4 flex items-center rounded-lg relative w-full',
         {
-          'bg-green-600': state == 'finished',
+          'bg-green-600': state == 'unlocked',
         },
       )}
       onMouseDown={onMouseDown}
@@ -148,8 +132,8 @@ export default function UnlockButton(props: UnlockButtonProps) {
         className={classNames(
           'absolute -translate-x-full top-0 left-0 w-full h-full bg-conversion brightness-[60%]',
           {
-            'animate-fill': state == 'charging',
-            hidden: state == 'finished',
+            'animate-fill': charging,
+            hidden: state == 'unlocked',
           },
         )}
         style={{
@@ -161,7 +145,7 @@ export default function UnlockButton(props: UnlockButtonProps) {
   );
 }
 
-function vibrate(timeout: number) {
+export function vibrate(timeout: number) {
   if ('vibrate' in navigator) {
     navigator.vibrate(timeout);
   }
