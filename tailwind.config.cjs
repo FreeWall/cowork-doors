@@ -1,7 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./src/**/*.{js,ts,jsx,tsx}'],
-  plugins: [],
   theme: {
     extend: {
       colors: {
@@ -17,9 +16,6 @@ module.exports = {
         border: 'border forwards',
       },
       keyframes: {
-        fill: {
-          to: { transform: 'translateX(0)' },
-        },
         border: {
           '0%': {
             'box-shadow':

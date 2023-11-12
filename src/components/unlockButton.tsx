@@ -4,10 +4,9 @@ import styles from './unlockButton.module.css';
 
 // https://codepen.io/beccakroese/pen/GQgwbx
 
-interface UnlockButtonProps extends PropsWithChildren {
-  type: 'rectangle' | 'circle';
-  timeout: number;
-  state: 'locked' | 'unlocking' | 'unlocked';
+export interface UnlockButtonProps extends PropsWithChildren {
+  chargeTime: number;
+  state: 'locked' | 'unlocking' | 'unlocked' | 'failed';
   onClick: () => void;
 }
 
@@ -32,7 +31,7 @@ export default function UnlockButton(props: UnlockButtonProps) {
     }
 
     clearTimeout(timeoutId);
-    setTimeoutId(setTimeout(() => unlock(), props.timeout + 50));
+    setTimeoutId(setTimeout(() => unlock(), props.chargeTime + 50));
     setCharging(true);
     vibrate(10);
   }
@@ -52,95 +51,68 @@ export default function UnlockButton(props: UnlockButtonProps) {
     props.onClick();
   }
 
-  if (props.type == 'circle') {
-    return (
-      <div
-        className="relative p-10 rounded-full"
-        onMouseDown={onMouseDown}
-        onTouchStart={onMouseDown}
-      >
-        <div
-          className={classNames(styles.backSignal, {
-            hidden: state != 'unlocking',
-          })}
-        />
-        <div
-          className={classNames(
-            styles.root,
-            ' w-[200px] h-[200px] border-4 box-content border-conversion select-none text-white overflow-hidden text-xl font-bold flex items-center rounded-full relative',
-            {
-              'bg-main': state != 'unlocked',
-              'bg-green-500 border-green-500': state == 'unlocked',
-              'border-white': charging || state == 'unlocking',
-            },
-          )}
-        >
-          <div
-            className={classNames(styles.after, {
-              [styles.spin ?? '']: charging || state == 'unlocking',
-              hidden: state == 'unlocked',
-            })}
-            style={{
-              animationDuration: props.timeout / 2 + 'ms',
-            }}
-          />
-          <div
-            className={classNames(styles.before, {
-              [styles.spin2 ?? '']: charging || state == 'unlocking',
-              hidden: state == 'unlocked',
-            })}
-            style={{
-              animationDuration: props.timeout / 2 + 'ms',
-              animationDelay: props.timeout / 2 + 'ms',
-            }}
-          />
-
-          <div
-            className={classNames(
-              'z-10 absolute top-[10px] left-[10px] text-center w-[180px] rounded-full h-[180px] bg-conversion flex flex-col justify-center items-center',
-              {
-                'bg-green-600': state == 'unlocked',
-              },
-            )}
-          >
-            <div
-              className={classNames(styles.lock, 'mb-2 scale-[70%]', {
-                [styles.unlocked ?? '']: state == 'unlocked',
-                [styles.charging ?? '']: charging,
-                [styles.unlocking ?? '']: state == 'unlocking',
-              })}
-            />
-            {props.children}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div
-      className={classNames(
-        'bg-conversion border-conversion select-none p-6 text-white overflow-hidden text-xl font-bold px-4 flex items-center rounded-lg relative w-full',
-        {
-          'bg-green-600': state == 'unlocked',
-        },
-      )}
+      className="relative rounded-full p-10"
       onMouseDown={onMouseDown}
       onTouchStart={onMouseDown}
     >
       <div
+        className={classNames(styles.backSignal, {
+          hidden: state != 'unlocking',
+        })}
+      />
+      <div
         className={classNames(
-          'absolute -translate-x-full top-0 left-0 w-full h-full bg-conversion brightness-[60%]',
+          styles.root,
+          'relative box-content flex h-[200px] w-[200px] select-none items-center overflow-hidden rounded-full border-4 border-conversion text-xl font-bold text-white',
           {
-            'animate-fill': charging,
-            hidden: state == 'unlocked',
+            'bg-main': state != 'unlocked',
+            'border-green-500 bg-green-500': state == 'unlocked',
+            'border-red-500 bg-red-500': state == 'failed',
+            'border-white': charging || state == 'unlocking',
           },
         )}
-        style={{
-          animationDuration: props.timeout + 'ms',
-        }}
-      />
-      <div className="z-10 text-center w-full">{props.children}</div>
+      >
+        <div
+          className={classNames(styles.after, {
+            [styles.spin ?? '']: charging || state == 'unlocking',
+            hidden: state == 'unlocked' || state == 'failed',
+          })}
+          style={{
+            animationDuration: props.chargeTime / 2 + 'ms',
+          }}
+        />
+        <div
+          className={classNames(styles.before, {
+            [styles.spin2 ?? '']: charging || state == 'unlocking',
+            hidden: state == 'unlocked' || state == 'failed',
+          })}
+          style={{
+            animationDuration: props.chargeTime / 2 + 'ms',
+            animationDelay: props.chargeTime / 2 + 'ms',
+          }}
+        />
+
+        <div
+          className={classNames(
+            'absolute left-[12px] top-[12px] z-10 flex h-[176px] w-[176px] flex-col items-center justify-center rounded-full bg-conversion text-center',
+            {
+              'bg-green-600': state == 'unlocked',
+              'bg-red-600': state == 'failed',
+            },
+          )}
+        >
+          <div
+            className={classNames(styles.lock, 'mb-2 scale-[70%]', {
+              [styles.unlocked ?? '']: state == 'unlocked',
+              [styles.charging ?? '']: charging,
+              [styles.unlocking ?? '']: state == 'unlocking',
+            })}
+          />
+          {props.children}
+        </div>
+      </div>
     </div>
   );
 }
