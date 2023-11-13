@@ -11,15 +11,15 @@ export default function Index() {
   const [shouldUnlock, setShouldUnlock] = useState(true);
 
   return (
-    <div className="flex absolute top-0 w-full h-full">
+    <div className="absolute top-0 flex h-full w-full">
       <Image
-        className="absolute top-10 left-1/2 -ml-[32px]"
+        className="absolute left-1/2 top-10 -ml-[32px]"
         src={logo.src}
         alt=""
         width={64}
         height={64}
       />
-      <div className="p-6 w-full h-full flex items-center justify-center pt-40 flex-col overflow-hidden">
+      <div className="flex h-full w-full flex-col items-center justify-center overflow-hidden p-6 pt-40">
         <UnlockButton
           chargeTime={750}
           state={state}
@@ -35,8 +35,8 @@ export default function Index() {
                 vibrate(500);
               } else {
                 vibrate(100);
-                setTimeout(() => vibrate(100), 150);
-                setTimeout(() => vibrate(100), 300);
+                setTimeout(() => vibrate(100), 250);
+                setTimeout(() => vibrate(100), 500);
               }
 
               setTimeout(() => {

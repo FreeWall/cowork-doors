@@ -33,7 +33,6 @@ export default function UnlockButton(props: UnlockButtonProps) {
     clearTimeout(timeoutId);
     setTimeoutId(setTimeout(() => unlock(), props.chargeTime + 50));
     setCharging(true);
-    vibrate(10);
   }
 
   function onMouseUp() {
@@ -43,7 +42,6 @@ export default function UnlockButton(props: UnlockButtonProps) {
 
     clearTimeout(timeoutId);
     setCharging(false);
-    vibrate(10);
   }
 
   function unlock() {
