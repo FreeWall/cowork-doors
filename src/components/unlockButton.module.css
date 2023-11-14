@@ -93,9 +93,6 @@
   left: 50%;
   margin: -7px 0 0 -3px;
 }
-.lock.unlocking:after {
-  animation: twspin 1s linear infinite;
-}
 .lock:before {
   content: '';
   display: block;
